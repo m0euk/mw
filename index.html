@@ -128,16 +128,16 @@
         
         // **Audio Fix Implementation**
         function getDriveDirectLink(url) {
-            // Regex to find the File ID from common sharing and viewer links
-            const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
-            
-            if (match && match[1]) {
-                const fileId = match[1];
-                // Use the standard direct download format, which is required since you confirmed it works
-                return `https://drive.google.com/uc?id=${fileId}&export=download`;
-            }
-            return url; // Return original if not a recognizable Drive link
+          const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            const fileId = match[1];
+            // Replace with YOUR actual Apps Script web app URL
+            const APPS_SCRIPT_BASE = "https://script.google.com/macros/s/AKfycbxlzxTyixSOWOBVwbzKgbW0S3ORAXTy395x_DoLXJxP6pwgw_AF56tE-qnOWoLJ7aAY/exec";
+            return `${APPS_SCRIPT_BASE}?id=${fileId}`;
+          }
+          return url;
         }
+
 
         // Function to show/hide the jump button
         function showJumpButton(isVisible) {
