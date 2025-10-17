@@ -30,6 +30,30 @@
             font-size: 1.5em;
         }
 
+        /* Container for the jump button, placed just below the fixed header */
+        #jump-container {
+            padding: 10px 20px 0;
+            text-align: right;
+            max-width: 75%; /* Align with the table width */
+            margin: 0 auto;
+        }
+
+        /* Jump button styling */
+        #jump-to-latest {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #jump-to-latest:hover {
+            background-color: #0056b3;
+        }
+
         /* Container to center and limit table width */
         #main-content {
             display: flex;
@@ -48,7 +72,7 @@
         table {
             border-collapse: collapse;
             width: 100%;
-            min-width: 600px; /* Ensures minimum width before scrollbar appears */
+            min-width: 600px;
             table-layout: auto;
         }
         th, td {
@@ -56,7 +80,7 @@
             padding: 6px 8px;
             text-align: left;
             vertical-align: top;
-            font-size: 0.9em; /* Further reduce text size inside the table */
+            font-size: 0.9em;
         }
         th {
             background-color: #f2f2f2;
@@ -83,6 +107,10 @@
         <h1>Radio Log Embed</h1>
     </div>
 
+    <div id="jump-container">
+        <a href="#latest-entry" id="jump-to-latest" style="display: none;">Jump to Latest Entry ↓</a>
+    </div>
+
     <div id="main-content">
         <div id="log-container">
             Loading log data...
@@ -97,6 +125,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchLogData(CSV_URL);
         });
+        
+        // Function to make the jump button visible
+        function showJumpButton() {
+            const button = document.getElementById('jump-to-latest');
+            if (button) {
+                // Only show if the table has content to scroll to
+                button.style.display = 'inline-block'; 
+            }
+        }
 
         async function fetchLogData(url) {
             try {
@@ -106,7 +143,6 @@
                 }
                 const csvText = await response.text();
                 
-                // Use PapaParse to parse the CSV data
                 Papa.parse(csvText, {
                     header: true,
                     dynamicTyping: true,
@@ -128,8 +164,6 @@
                 row && Object.values(row).some(value => value !== null && value !== "")
             );
             
-            // REVERSAL REMOVED: Data will be displayed in the order it appears in the spreadsheet.
-
             if (filteredData.length === 0) {
                 document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
                 return;
@@ -151,8 +185,14 @@
             });
 
             // Populate Table Body
-            filteredData.forEach(row => {
+            filteredData.forEach((row, index) => {
                 let tr = tbody.insertRow();
+                
+                // ⭐ ADD ID TO THE LAST ROW (which is the newest entry)
+                if (index === filteredData.length - 1) {
+                    tr.id = 'latest-entry';
+                }
+
                 headers.forEach(header => {
                     let td = tr.insertCell();
                     let cellValue = row[header];
@@ -185,6 +225,9 @@
 
             document.getElementById('log-container').innerHTML = '';
             document.getElementById('log-container').appendChild(table);
+            
+            // ⭐ Show the button after the table is rendered
+            showJumpButton();
         }
     </script>
 </body>
