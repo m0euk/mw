@@ -55,11 +55,10 @@
 
     <script>
         // 1. CONFIGURATION
-        // The URL for your public Google Sheet CSV
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=868532740&single=true&output=csv'; 
         
-        // **IMPORTANT**: Change this value to the exact name of the column that contains the audio links.
-        const GD = 'Link to Audio Recording'; 
+        // **IMPORTANT**: This should be the exact name of the column that contains the audio links.
+        const AUDIO_LINK_COLUMN_NAME = 'Link to Audio Recording'; 
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchLogData(CSV_URL);
@@ -75,11 +74,10 @@
                 
                 // Use PapaParse to parse the CSV data
                 Papa.parse(csvText, {
-                    header: true, // Use the first row as column headers
-                    dynamicTyping: true, // Try to convert strings to numbers/booleans
+                    header: true,
+                    dynamicTyping: true,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        // Log fields to help user debug column name
                         console.log("Detected Columns:", results.meta.fields); 
                         renderTable(results.data, results.meta.fields);
                         document.getElementById('last-updated').textContent = new Date().toLocaleString();
@@ -98,11 +96,11 @@
             const tbody = table.createTBody();
 
             // Create Table Header
-            let headerRow = thead.insertRow();
+            let headerRow = thead.createTHead().insertRow();
             headers.forEach(header => {
                 let th = document.createElement('th');
                 th.textContent = header;
-                if (header === GD) {
+                if (header === AUDIO_LINK_COLUMN_NAME) {
                     th.classList.add('audio-player-cell');
                 }
                 headerRow.appendChild(th);
@@ -115,27 +113,29 @@
                     let td = tr.insertCell();
                     let cellValue = row[header];
 
-                    if (header === GD && cellValue) {
-                        // 2. Audio Player Logic
-                        if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                            const audio = document.createElement('audio');
-                            audio.controls = true;
-                            audio.src = cellValue;
-                            td.appendChild(audio);
-                            td.classList.add('audio-player-cell');
-                        } else {
-                            // If the cell has text but isn't a URL
-                            td.textContent = cellValue; 
-                        }
-                    } else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                        // 3. General Link Logic (for any other URL in the table)
+                    // 1. Check for the specific Audio Link column and a valid URL
+                    if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
+                        // Create and embed the inline audio player
+                        const audio = document.createElement('audio');
+                        audio.controls = true; // Shows the player controls
+                        audio.src = cellValue;
+                        td.appendChild(audio);
+                        td.classList.add('audio-player-cell');
+                        // IMPORTANT: Skip the rest of the logic for this cell
+                        return;
+                    } 
+                    
+                    // 2. General Link Logic (for any other URL in other columns)
+                    else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         const a = document.createElement('a');
                         a.href = cellValue;
                         a.textContent = cellValue.length > 50 ? cellValue.substring(0, 47) + '...' : cellValue;
-                        a.target = '_blank'; // Open in new tab
+                        a.target = '_blank'; // Open in new tab (This is desired for non-audio links)
                         td.appendChild(a);
-                    } else {
-                        // Regular text content
+                    } 
+                    
+                    // 3. Regular text content or non-URL content in the audio column
+                    else {
                         td.textContent = cellValue;
                     }
                 });
