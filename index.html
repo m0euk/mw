@@ -57,8 +57,8 @@
         // 1. CONFIGURATION
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=868532740&single=true&output=csv'; 
         
-        // **IMPORTANT**: This should be the exact name of the column that contains the audio links.
-        const AUDIO_LINK_COLUMN_NAME = 'Link to Audio Recording'; 
+        // **CORRECTED COLUMN NAME**: Using 'GD' as specified.
+        const AUDIO_LINK_COLUMN_NAME = 'GD'; 
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchLogData(CSV_URL);
@@ -96,7 +96,7 @@
             const tbody = table.createTBody();
 
             // Create Table Header
-            let headerRow = thead.createTHead().insertRow();
+            let headerRow = thead.insertRow();
             headers.forEach(header => {
                 let th = document.createElement('th');
                 th.textContent = header;
@@ -113,7 +113,7 @@
                     let td = tr.insertCell();
                     let cellValue = row[header];
 
-                    // 1. Check for the specific Audio Link column and a valid URL
+                    // 1. Check for the specific Audio Link column ('GD') and a valid URL
                     if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         // Create and embed the inline audio player
                         const audio = document.createElement('audio');
@@ -121,7 +121,7 @@
                         audio.src = cellValue;
                         td.appendChild(audio);
                         td.classList.add('audio-player-cell');
-                        // IMPORTANT: Skip the rest of the logic for this cell
+                        // *** IMPORTANT: Stop processing this cell to prevent it from becoming a clickable link ***
                         return;
                     } 
                     
@@ -134,7 +134,7 @@
                         td.appendChild(a);
                     } 
                     
-                    // 3. Regular text content or non-URL content in the audio column
+                    // 3. Regular text content
                     else {
                         td.textContent = cellValue;
                     }
