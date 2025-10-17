@@ -126,14 +126,14 @@
             fetchLogData(CSV_URL);
         });
         
-        // ⭐ CORRECTED AUDIO PLAYER FIX: Function to convert Google Drive link to a direct download format
+        // **Audio Fix Implementation**
         function getDriveDirectLink(url) {
             // Regex to find the File ID from common sharing and viewer links
             const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
             
             if (match && match[1]) {
                 const fileId = match[1];
-                // Use the standard and reliable direct download format
+                // Use the standard direct download format, which is required since you confirmed it works
                 return `https://drive.google.com/uc?id=${fileId}&export=download`;
             }
             return url; // Return original if not a recognizable Drive link
@@ -218,9 +218,16 @@
                         // Apply the Google Drive link conversion
                         const audioLink = getDriveDirectLink(cellValue);
                         
+                        // Use <source> tag for better streaming compatibility
                         const audio = document.createElement('audio');
                         audio.controls = true;
-                        audio.src = audioLink;
+                        
+                        const source = document.createElement('source');
+                        source.src = audioLink;
+                        source.type = 'audio/mpeg'; // Hint the browser about the content type
+                        
+                        audio.appendChild(source);
+                        
                         td.appendChild(audio);
                         td.classList.add('audio-player-cell');
                         return;
