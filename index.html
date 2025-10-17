@@ -241,13 +241,7 @@
                         })();
 
                         
-                        audio.appendChild(source);
-                        
-                        td.appendChild(audio);
-                        td.classList.add('audio-player-cell');
-                        return;
-                    }
-                    
+                       
                     // 2. General Link Logic (for any other URL)
                     else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         const a = document.createElement('a');
