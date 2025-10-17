@@ -5,60 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Log Embed</title>
     <style>
-        /* Basic Styling */
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
+        /* General Layout */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; /* Remove default margin */
             line-height: 1.6;
+            padding-top: 50px; /* Add space for the fixed header */
         }
-        h1 { 
-            border-bottom: 2px solid #ccc; 
-            padding-bottom: 10px; 
+        
+        /* 1. PIN THE TITLE BAR (H1) */
+        .header-bar {
+            position: fixed; /* Use fixed to pin to viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px 20px;
+            z-index: 1000;
         }
-        table { 
-            border-collapse: collapse; 
-            width: 100%; 
-            margin-top: 20px;
+        .header-bar h1 {
+            margin: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
+
+        /* Container to center and limit table width */
+        #main-content {
+            display: flex;
+            justify-content: center; /* Center the table horizontally */
+            padding: 20px;
+        }
+        
+        /* 2. MAKE TABLE MAX 75% WIDTH */
+        #log-container {
+            max-width: 75%;
+            width: 100%; /* Ensure it uses 100% of the max-width container */
+            overflow-x: auto; /* Allow horizontal scroll if content overflows */
+        }
+        
+        /* Table Styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0; /* Remove top margin from original code */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
             vertical-align: top;
         }
-        th { 
-            background-color: #f2f2f2; 
+        th {
+            background-color: #f2f2f2;
             font-weight: bold;
         }
-        tr:nth-child(even) { 
-            background-color: #f9f9f9; 
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
+        
         /* Specific styling for the player column to ensure enough space */
-        .audio-player-cell { 
-            min-width: 250px; 
+        .audio-player-cell {
+            min-width: 250px;
         }
         /* Style for the embedded audio player */
         audio {
-            width: 100%; 
+            width: 100%;
             max-width: 300px;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-    <h1>Radio Log Embed</h1>
-    <p>Data loaded from a Google Sheet CSV. Last updated: <span id="last-updated">...</span></p>
     
-    <div id="log-container">
-        Loading log data...
+    <div class="header-bar">
+        <h1>Radio Log Embed</h1>
+    </div>
+
+    <div id="main-content">
+        <div id="log-container">
+            Loading log data...
+        </div>
     </div>
 
     <script>
         // 1. CONFIGURATION
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=868532740&single=true&output=csv'; 
+        // **UPDATED URL**
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=1343487192&single=true&output=csv';
         
-        // **CORRECTED COLUMN NAME**: Using 'GD' as specified.
-        const AUDIO_LINK_COLUMN_NAME = 'GD'; 
+        // COLUMN NAME
+        const AUDIO_LINK_COLUMN_NAME = 'GD';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchLogData(CSV_URL);
@@ -78,9 +114,9 @@
                     dynamicTyping: true,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        console.log("Detected Columns:", results.meta.fields); 
+                        // Removed console.log for tidiness
                         renderTable(results.data, results.meta.fields);
-                        document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                        // Removed last-updated logic
                     }
                 });
 
@@ -113,26 +149,25 @@
                     let td = tr.insertCell();
                     let cellValue = row[header];
 
-                    // 1. Check for the specific Audio Link column ('GD') and a valid URL
+                    // 1. Audio Link Column Logic
                     if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                        // Create and embed the inline audio player
                         const audio = document.createElement('audio');
-                        audio.controls = true; // Shows the player controls
+                        audio.controls = true;
                         audio.src = cellValue;
                         td.appendChild(audio);
                         td.classList.add('audio-player-cell');
-                        // *** IMPORTANT: Stop processing this cell to prevent it from becoming a clickable link ***
-                        return;
-                    } 
+                        return; // Stop processing this cell
+                    }
                     
-                    // 2. General Link Logic (for any other URL in other columns)
+                    // 2. General Link Logic (for any other URL)
                     else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         const a = document.createElement('a');
                         a.href = cellValue;
+                        // Use a shortened text for tidiness, removed superfluous comment
                         a.textContent = cellValue.length > 50 ? cellValue.substring(0, 47) + '...' : cellValue;
-                        a.target = '_blank'; // Open in new tab (This is desired for non-audio links)
+                        a.target = '_blank';
                         td.appendChild(a);
-                    } 
+                    }
                     
                     // 3. Regular text content
                     else {
