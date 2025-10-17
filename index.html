@@ -1,264 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Log Embed</title>
-    <style>
-        /* General Layout and Text Size Reduction */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            line-height: 1.4;
-            padding-top: 55px; /* Space for the fixed header */
-            font-size: 14px; /* Base font size reduced */
-        }
-        
-        /* Pinned Title Bar */
-        .header-bar {
-            position: fixed; /* Pin to viewport */
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 10px 20px;
-            z-index: 1000;
-        }
-        .header-bar h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-
-        /* Container for the jump button, aligned with the table */
-        #jump-container {
-            padding: 10px 20px 0;
-            text-align: right;
-            max-width: 75%; /* Align with the table width */
-            margin: 0 auto;
-        }
-
-        /* Jump button styling */
-        #jump-to-latest {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.9em;
-            text-decoration: none;
-            display: none; /* Initially hidden */
-        }
-        #jump-to-latest:hover {
-            background-color: #0056b3;
-        }
-
-        /* Container to center and limit table width */
-        #main-content {
-            display: flex;
-            justify-content: center; /* Center the table horizontally */
-            padding: 20px;
-        }
-        
-        /* Table Max Width (75%) and Responsiveness */
-        #log-container {
-            max-width: 75%;
-            width: 100%;
-            overflow-x: auto; /* Enables horizontal scrolling for responsiveness */
-        }
-        
-        /* Table Styling */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            min-width: 600px;
-            table-layout: auto;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px 8px;
-            text-align: left;
-            vertical-align: top;
-            font-size: 0.9em;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        /* Audio Player Styling */
-        .audio-player-cell {
-            min-width: 250px;
-        }
-        audio {
-            width: 100%;
-            max-width: 300px;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radio Log Embed (Lazy-Load Audio)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      line-height: 1.4;
+      padding-top: 55px;
+      font-size: 14px;
+    }
+    .header-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      z-index: 1000;
+    }
+    .header-bar h1 { margin: 0; font-size: 1.5em; }
+    #jump-container {
+      padding: 10px 20px 0;
+      text-align: right;
+      max-width: 75%;
+      margin: 0 auto;
+    }
+    #jump-to-latest {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.9em;
+      text-decoration: none;
+      display: none;
+    }
+    #jump-to-latest:hover { background-color: #0056b3; }
+    #main-content {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    #log-container {
+      max-width: 75%;
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 600px;
+      table-layout: auto;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.9em;
+    }
+    th { background-color: #f2f2f2; font-weight: bold; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .audio-player-cell { min-width: 250px; }
+    audio {
+      width: 100%;
+      max-width: 300px;
+      margin-top: 4px;
+    }
+    .load-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    .load-btn:hover { background-color: #218838; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-    
-    <div class="header-bar">
-        <h1>Radio Log Embed</h1>
+  <div class="header-bar">
+    <h1>Radio Log Embed</h1>
+  </div>
+
+  <div id="jump-container">
+    <a href="#latest-entry" id="jump-to-latest">Jump to Latest Entry ↓</a>
+  </div>
+
+  <div id="main-content">
+    <div id="log-container">
+      Loading log data...
     </div>
+  </div>
 
-    <div id="jump-container">
-        <a href="#latest-entry" id="jump-to-latest">Jump to Latest Entry ↓</a>
-    </div>
+  <script>
+    // CONFIG
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=1343487192&single=true&output=csv';
+    const AUDIO_LINK_COLUMN_NAME = 'GD';
+    const APPS_SCRIPT_BASE = "https://script.google.com/macros/s/AKfycbxImPQKXzR6cWU-y6udoA3sZCtLijjyZ-xg6dbGuHdNN-_QugT369RSWnBFEpuDgZa9/exec"; // your deployed script
 
-    <div id="main-content">
-        <div id="log-container">
-            Loading log data...
-        </div>
-    </div>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLogData(CSV_URL);
+    });
 
-    <script>
-        // 1. CONFIGURATION
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=1343487192&single=true&output=csv';
-        const AUDIO_LINK_COLUMN_NAME = 'GD';
+    // Get Base64 from Apps Script
+    async function fetchDriveAudio(fileId) {
+      const apiUrl = `${APPS_SCRIPT_BASE}?id=${fileId}`;
+      try {
+        const res = await fetch(apiUrl);
+        const json = await res.json();
+        if (json.error) throw new Error(json.error);
+        return `data:${json.mimeType};base64,${json.data}`;
+      } catch (err) {
+        console.error("Error fetching Drive audio:", err);
+        return null;
+      }
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchLogData(CSV_URL);
+    // Extract File ID from Drive link
+    function extractFileId(url) {
+      const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+      return match ? match[1] : null;
+    }
+
+    // Show/hide jump button
+    function showJumpButton(isVisible) {
+      const button = document.getElementById('jump-to-latest');
+      if (button) button.style.display = isVisible ? 'inline-block' : 'none';
+    }
+
+    async function fetchLogData(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const csvText = await response.text();
+
+        Papa.parse(csvText, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+          complete: results => renderTable(results.data, results.meta.fields)
         });
-        
-        // **Audio Fix Implementation**
-        async function getDriveDirectLink(url) {
-          const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
-          if (!match) return null;
+      } catch (error) {
+        console.error("Could not fetch the log data: ", error);
+        document.getElementById('log-container').innerHTML =
+          `<p style="color: red;">Failed to load data. Error: ${error.message}</p>`;
+      }
+    }
 
-          const fileId = match[1];
-          const APPS_SCRIPT_BASE = "https://script.google.com/macros/s/AKfycbxImPQKXzR6cWU-y6udoA3sZCtLijjyZ-xg6dbGuHdNN-_QugT369RSWnBFEpuDgZa9/exec"; // ← your script URL
-          const apiUrl = `${APPS_SCRIPT_BASE}?id=${fileId}`;
+    function renderTable(data, headers) {
+      const filtered = data.filter(row => row && Object.values(row).some(v => v !== null && v !== ""));
+      if (filtered.length === 0) {
+        document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
+        showJumpButton(false);
+        return;
+      }
 
-          try {
-            const res = await fetch(apiUrl);
-            const json = await res.json();
-            if (json.error) throw new Error(json.error);
+      const table = document.createElement('table');
+      const thead = table.createTHead();
+      const tbody = table.createTBody();
 
-            // Build a data: URI for the audio element
-            return `data:${json.mimeType};base64,${json.data}`;
-          } catch (err) {
-            console.error("Error fetching Drive audio:", err);
-            return null;
+      // Header
+      let headerRow = thead.insertRow();
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        if (h === AUDIO_LINK_COLUMN_NAME) th.classList.add('audio-player-cell');
+        headerRow.appendChild(th);
+      });
+
+      // Body
+      filtered.forEach((row, i) => {
+        const tr = tbody.insertRow();
+        if (i === filtered.length - 1) tr.id = 'latest-entry';
+
+        headers.forEach(h => {
+          const td = tr.insertCell();
+          const val = row[h];
+
+          // Lazy-load audio column
+          if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
+            const fileId = extractFileId(val);
+            if (fileId) {
+              const btn = document.createElement('button');
+              btn.textContent = "Load & Play";
+              btn.className = "load-btn";
+              btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.textContent = "Loading...";
+                const audioLink = await fetchDriveAudio(fileId);
+                if (audioLink) {
+                  const audio = document.createElement('audio');
+                  audio.controls = true;
+                  audio.src = audioLink;
+                  td.innerHTML = "";
+                  td.appendChild(audio);
+                  audio.play();
+                } else {
+                  btn.textContent = "Failed";
+                  btn.disabled = false;
+                }
+              });
+              td.appendChild(btn);
+            } else {
+              td.textContent = "Invalid link";
+            }
           }
-        }
+          // Regular link columns
+          else if (typeof val === 'string' && val.startsWith('http')) {
+            const a = document.createElement('a');
+            a.href = val;
+            a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
+            a.target = '_blank';
+            td.appendChild(a);
+          }
+          // Plain text
+          else {
+            td.textContent = val;
+          }
+        });
+      });
 
-        // Function to show/hide the jump button
-        function showJumpButton(isVisible) {
-            const button = document.getElementById('jump-to-latest');
-            if (button) {
-                button.style.display = isVisible ? 'inline-block' : 'none';
-            }
-        }
-
-        async function fetchLogData(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        renderTable(results.data, results.meta.fields);
-                    }
-                });
-
-            } catch (error) {
-                console.error("Could not fetch the log data: ", error);
-                document.getElementById('log-container').innerHTML = `<p style="color: red;">Failed to load data. Please check the URL and ensure the sheet is published correctly. Error: ${error.message}</p>`;
-            }
-        }
-
-        function renderTable(data, headers) {
-            // FILTER: Remove any rows that are completely empty
-            const filteredData = data.filter(row => 
-                row && Object.values(row).some(value => value !== null && value !== "")
-            );
-            
-            // Data is in spreadsheet order (oldest at top).
-
-            if (filteredData.length === 0) {
-                document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
-                showJumpButton(false);
-                return;
-            }
-
-            const table = document.createElement('table');
-            const thead = table.createTHead();
-            const tbody = table.createTBody();
-
-            // Create Table Header
-            let headerRow = thead.insertRow();
-            headers.forEach(header => {
-                let th = document.createElement('th');
-                th.textContent = header;
-                if (header === AUDIO_LINK_COLUMN_NAME) {
-                    th.classList.add('audio-player-cell');
-                }
-                headerRow.appendChild(th);
-            });
-
-            // Populate Table Body
-            filteredData.forEach((row, index) => {
-                let tr = tbody.insertRow();
-                
-                // ADD ID TO THE LAST ROW (which is the newest entry)
-                if (index === filteredData.length - 1) {
-                    tr.id = 'latest-entry';
-                }
-
-                headers.forEach(header => {
-                    let td = tr.insertCell();
-                    let cellValue = row[header];
-
-                    // 1. Audio Link Column Logic
-                    if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                        (async () => {
-                            const audioLink = await getDriveDirectLink(cellValue);
-                            const audio = document.createElement('audio');
-                            audio.controls = true;
-
-                            if (audioLink) {
-                                audio.src = audioLink;
-                            } else {
-                                audio.textContent = "Audio unavailable";
-                            }
-
-                            td.appendChild(audio);
-                            td.classList.add('audio-player-cell');
-                        })();
-                    }
-                    // 2. General Link Logic
-                    else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                        const a = document.createElement('a');
-                        a.href = cellValue;
-                        a.textContent = cellValue.length > 50 ? cellValue.substring(0, 47) + '...' : cellValue;
-                        a.target = '_blank';
-                        td.appendChild(a);
-                    }
-                    // 3. Regular text
-                    else {
-                        td.textContent = cellValue;
-                    }
-                });
-            });
-
-            document.getElementById('log-container').innerHTML = '';
-            document.getElementById('log-container').appendChild(table);
-            
-            // Show the button after the table is rendered
-            showJumpButton(true);
-        }
-    </script>
+      const container = document.getElementById('log-container');
+      container.innerHTML = '';
+      container.appendChild(table);
+      showJumpButton(true);
+    }
+  </script>
 </body>
 </html>
