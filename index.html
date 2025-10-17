@@ -126,19 +126,20 @@
             fetchLogData(CSV_URL);
         });
         
-        // Function to convert Google Drive link to a direct streaming/download link
+        // ⭐ CORRECTED AUDIO PLAYER FIX: Function to convert Google Drive link to a direct download format
         function getDriveDirectLink(url) {
-            // Regex to find the File ID in common Google Drive link formats
-            const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+            // Regex to find the File ID from common sharing and viewer links
+            const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+            
             if (match && match[1]) {
                 const fileId = match[1];
-                // Construct the direct download/content URL
-                return `https://drive.google.com/uc?export=download&id=${fileId}`;
+                // Use the standard and reliable direct download format
+                return `https://drive.google.com/uc?id=${fileId}&export=download`;
             }
             return url; // Return original if not a recognizable Drive link
         }
 
-        // Function to show the jump button after the table is rendered
+        // Function to show/hide the jump button
         function showJumpButton(isVisible) {
             const button = document.getElementById('jump-to-latest');
             if (button) {
@@ -175,7 +176,7 @@
                 row && Object.values(row).some(value => value !== null && value !== "")
             );
             
-            // REVERSAL REMOVED: Data will be displayed in the order it appears in the spreadsheet.
+            // Data is in spreadsheet order (oldest at top).
 
             if (filteredData.length === 0) {
                 document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
@@ -211,7 +212,7 @@
                     let td = tr.insertCell();
                     let cellValue = row[header];
 
-                    // 1. Audio Link Column Logic (with Google Drive fix)
+                    // 1. Audio Link Column Logic (with Google Drive fix applied)
                     if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         
                         // Apply the Google Drive link conversion
