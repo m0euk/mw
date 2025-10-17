@@ -123,13 +123,12 @@
         }
 
         function renderTable(data, headers) {
-            // FILTER: Remove any rows that are completely empty to prevent JavaScript errors
+            // FILTER: Remove any rows that are completely empty
             const filteredData = data.filter(row => 
                 row && Object.values(row).some(value => value !== null && value !== "")
             );
             
-            // REVERSE: Sort newest entries to the top
-            filteredData.reverse(); 
+            // REVERSAL REMOVED: Data will be displayed in the order it appears in the spreadsheet.
 
             if (filteredData.length === 0) {
                 document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
