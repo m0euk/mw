@@ -72,6 +72,8 @@
       max-width: 300px;
       margin-top: 4px;
     }
+
+    /* Button + spinner styling */
     .load-btn {
       background-color: #28a745;
       color: white;
@@ -80,8 +82,20 @@
       cursor: pointer;
       border-radius: 4px;
       font-size: 0.85em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .load-btn:hover { background-color: #218838; }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #fff;
+      border-top: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
@@ -110,7 +124,7 @@
       fetchLogData(CSV_URL);
     });
 
-    // Get Base64 from Apps Script
+    // Get Base64 audio data from Apps Script
     async function fetchDriveAudio(fileId) {
       const apiUrl = `${APPS_SCRIPT_BASE}?id=${fileId}`;
       try {
@@ -168,7 +182,7 @@
       const tbody = table.createTBody();
 
       // Header
-      let headerRow = thead.insertRow();
+      const headerRow = thead.insertRow();
       headers.forEach(h => {
         const th = document.createElement('th');
         th.textContent = h;
@@ -185,16 +199,18 @@
           const td = tr.insertCell();
           const val = row[h];
 
-          // Lazy-load audio column
           if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
             const fileId = extractFileId(val);
             if (fileId) {
               const btn = document.createElement('button');
               btn.textContent = "Load & Play";
               btn.className = "load-btn";
+              td.appendChild(btn);
+
               btn.addEventListener('click', async () => {
                 btn.disabled = true;
-                btn.textContent = "Loading...";
+                btn.innerHTML = `<span class="spinner"></span> Loading...`;
+
                 const audioLink = await fetchDriveAudio(fileId);
                 if (audioLink) {
                   const audio = document.createElement('audio');
@@ -208,21 +224,16 @@
                   btn.disabled = false;
                 }
               });
-              td.appendChild(btn);
             } else {
               td.textContent = "Invalid link";
             }
-          }
-          // Regular link columns
-          else if (typeof val === 'string' && val.startsWith('http')) {
+          } else if (typeof val === 'string' && val.startsWith('http')) {
             const a = document.createElement('a');
             a.href = val;
             a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
             a.target = '_blank';
             td.appendChild(a);
-          }
-          // Plain text
-          else {
+          } else {
             td.textContent = val;
           }
         });
