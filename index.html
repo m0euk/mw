@@ -148,7 +148,6 @@
           }
         }
 
-
         // Function to show/hide the jump button
         function showJumpButton(isVisible) {
             const button = document.getElementById('jump-to-latest');
@@ -222,27 +221,24 @@
                     let td = tr.insertCell();
                     let cellValue = row[header];
 
-                    // 1. Audio Link Column Logic (with Google Drive fix applied)
+                    // 1. Audio Link Column Logic
                     if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
-                        
-                       (async () => {
-                          const audioLink = await getDriveDirectLink(cellValue);
-                          const audio = document.createElement('audio');
-                          audio.controls = true;
+                        (async () => {
+                            const audioLink = await getDriveDirectLink(cellValue);
+                            const audio = document.createElement('audio');
+                            audio.controls = true;
 
-                          if (audioLink) {
-                            audio.src = audioLink;
-                          } else {
-                            audio.textContent = "Audio unavailable";
-                          }
+                            if (audioLink) {
+                                audio.src = audioLink;
+                            } else {
+                                audio.textContent = "Audio unavailable";
+                            }
 
-                          td.appendChild(audio);
-                          td.classList.add('audio-player-cell');
+                            td.appendChild(audio);
+                            td.classList.add('audio-player-cell');
                         })();
-
-                        
-                       
-                    // 2. General Link Logic (for any other URL)
+                    }
+                    // 2. General Link Logic
                     else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         const a = document.createElement('a');
                         a.href = cellValue;
@@ -250,8 +246,7 @@
                         a.target = '_blank';
                         td.appendChild(a);
                     }
-                    
-                    // 3. Regular text content
+                    // 3. Regular text
                     else {
                         td.textContent = cellValue;
                     }
@@ -261,7 +256,7 @@
             document.getElementById('log-container').innerHTML = '';
             document.getElementById('log-container').appendChild(table);
             
-            // Show the button after the table is rendered and confirmed to have data
+            // Show the button after the table is rendered
             showJumpButton(true);
         }
     </script>
