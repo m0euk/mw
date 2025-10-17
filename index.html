@@ -5,17 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Log Embed</title>
     <style>
-        /* General Layout */
+        /* General Layout and Text Size Reduction */
         body {
             font-family: Arial, sans-serif;
-            margin: 0; /* Remove default margin */
-            line-height: 1.6;
-            padding-top: 50px; /* Add space for the fixed header */
+            margin: 0;
+            line-height: 1.4; /* Slightly reduced line height */
+            padding-top: 55px; /* Add space for the fixed header */
+            font-size: 14px; /* Base font size reduced */
         }
         
-        /* 1. PIN THE TITLE BAR (H1) */
+        /* Pinned Title Bar */
         .header-bar {
-            position: fixed; /* Use fixed to pin to viewport */
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -26,35 +27,37 @@
         }
         .header-bar h1 {
             margin: 0;
-            padding-bottom: 0;
-            border-bottom: none;
+            font-size: 1.5em; /* Keep heading readable */
         }
 
         /* Container to center and limit table width */
         #main-content {
             display: flex;
-            justify-content: center; /* Center the table horizontally */
+            justify-content: center;
             padding: 20px;
         }
         
-        /* 2. MAKE TABLE MAX 75% WIDTH */
+        /* Table Max Width (75%) and Responsiveness */
         #log-container {
             max-width: 75%;
-            width: 100%; /* Ensure it uses 100% of the max-width container */
-            overflow-x: auto; /* Allow horizontal scroll if content overflows */
+            width: 100%;
+            /* This ensures responsiveness by allowing horizontal scrolling */
+            overflow-x: auto; 
         }
         
         /* Table Styling */
         table {
             border-collapse: collapse;
-            width: 100%;
-            margin: 0; /* Remove top margin from original code */
+            width: 100%; /* Take up 100% of the allowed width (max 75%) */
+            min-width: 600px; /* Optional: ensures minimum table width for small screens before scrollbar appears */
+            table-layout: auto; /* Allow column widths to adjust based on content */
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px 8px; /* Slightly reduced padding */
             text-align: left;
             vertical-align: top;
+            font-size: 0.9em; /* Further reduce text size inside the table */
         }
         th {
             background-color: #f2f2f2;
@@ -64,11 +67,10 @@
             background-color: #f9f9f9;
         }
         
-        /* Specific styling for the player column to ensure enough space */
+        /* Audio Player Styling */
         .audio-player-cell {
             min-width: 250px;
         }
-        /* Style for the embedded audio player */
         audio {
             width: 100%;
             max-width: 300px;
@@ -90,10 +92,7 @@
 
     <script>
         // 1. CONFIGURATION
-        // **UPDATED URL**
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=1343487192&single=true&output=csv;
-        
-        // COLUMN NAME
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=1343487192&single=true&output=csv';
         const AUDIO_LINK_COLUMN_NAME = 'GD';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -114,9 +113,7 @@
                     dynamicTyping: true,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        // Removed console.log for tidiness
                         renderTable(results.data, results.meta.fields);
-                        // Removed last-updated logic
                     }
                 });
 
@@ -156,14 +153,13 @@
                         audio.src = cellValue;
                         td.appendChild(audio);
                         td.classList.add('audio-player-cell');
-                        return; // Stop processing this cell
+                        return;
                     }
                     
                     // 2. General Link Logic (for any other URL)
                     else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         const a = document.createElement('a');
                         a.href = cellValue;
-                        // Use a shortened text for tidiness, removed superfluous comment
                         a.textContent = cellValue.length > 50 ? cellValue.substring(0, 47) + '...' : cellValue;
                         a.target = '_blank';
                         td.appendChild(a);
