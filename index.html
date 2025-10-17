@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Log Embed</title>
+    <style>
+        /* Basic Styling */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            line-height: 1.6;
+        }
+        h1 { 
+            border-bottom: 2px solid #ccc; 
+            padding-bottom: 10px; 
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin-top: 20px;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left;
+            vertical-align: top;
+        }
+        th { 
+            background-color: #f2f2f2; 
+            font-weight: bold;
+        }
+        tr:nth-child(even) { 
+            background-color: #f9f9f9; 
+        }
+        /* Specific styling for the player column to ensure enough space */
+        .audio-player-cell { 
+            min-width: 250px; 
+        }
+        /* Style for the embedded audio player */
+        audio {
+            width: 100%; 
+            max-width: 300px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <h1>Radio Log Embed</h1>
+    <p>Data loaded from a Google Sheet CSV. Last updated: <span id="last-updated">...</span></p>
+    
+    <div id="log-container">
+        Loading log data...
+    </div>
+
+    <script>
+        // 1. CONFIGURATION
+        // The URL for your public Google Sheet CSV
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6Q67Mj9AV5cIsfi3uoYqZIzJbWg3woVNurwmnm326EGO9xy_c521nMiaKo7yQVXlWu_Itvi5dNCps/pub?gid=868532740&single=true&output=csv'; 
+        
+        // **IMPORTANT**: Change this value to the exact name of the column that contains the audio links.
+        const GD = 'Link to Audio Recording'; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchLogData(CSV_URL);
+        });
+
+        async function fetchLogData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                
+                // Use PapaParse to parse the CSV data
+                Papa.parse(csvText, {
+                    header: true, // Use the first row as column headers
+                    dynamicTyping: true, // Try to convert strings to numbers/booleans
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        // Log fields to help user debug column name
+                        console.log("Detected Columns:", results.meta.fields); 
+                        renderTable(results.data, results.meta.fields);
+                        document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Could not fetch the log data: ", error);
+                document.getElementById('log-container').innerHTML = `<p style="color: red;">Failed to load data. Please check the URL and ensure the sheet is published correctly. Error: ${error.message}</p>`;
+            }
+        }
+
+        function renderTable(data, headers) {
+            const table = document.createElement('table');
+            const thead = table.createTHead();
+            const tbody = table.createTBody();
+
+            // Create Table Header
+            let headerRow = thead.insertRow();
+            headers.forEach(header => {
+                let th = document.createElement('th');
+                th.textContent = header;
+                if (header === GD) {
+                    th.classList.add('audio-player-cell');
+                }
+                headerRow.appendChild(th);
+            });
+
+            // Populate Table Body
+            data.forEach(row => {
+                let tr = tbody.insertRow();
+                headers.forEach(header => {
+                    let td = tr.insertCell();
+                    let cellValue = row[header];
+
+                    if (header === GD && cellValue) {
+                        // 2. Audio Player Logic
+                        if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
+                            const audio = document.createElement('audio');
+                            audio.controls = true;
+                            audio.src = cellValue;
+                            td.appendChild(audio);
+                            td.classList.add('audio-player-cell');
+                        } else {
+                            // If the cell has text but isn't a URL
+                            td.textContent = cellValue; 
+                        }
+                    } else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
+                        // 3. General Link Logic (for any other URL in the table)
+                        const a = document.createElement('a');
+                        a.href = cellValue;
+                        a.textContent = cellValue.length > 50 ? cellValue.substring(0, 47) + '...' : cellValue;
+                        a.target = '_blank'; // Open in new tab
+                        td.appendChild(a);
+                    } else {
+                        // Regular text content
+                        td.textContent = cellValue;
+                    }
+                });
+            });
+
+            document.getElementById('log-container').innerHTML = '';
+            document.getElementById('log-container').appendChild(table);
+        }
+    </script>
+</body>
+</html>
