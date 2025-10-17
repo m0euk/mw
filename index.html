@@ -225,16 +225,21 @@
                     // 1. Audio Link Column Logic (with Google Drive fix applied)
                     if (header === AUDIO_LINK_COLUMN_NAME && cellValue && typeof cellValue === 'string' && cellValue.startsWith('http')) {
                         
-                        // Apply the Google Drive link conversion
-                        const audioLink = getDriveDirectLink(cellValue);
-                        
-                        // Use <source> tag for better streaming compatibility
-                        const audio = document.createElement('audio');
-                        audio.controls = true;
-                        
-                        const source = document.createElement('source');
-                        source.src = audioLink;
-                        source.type = 'audio/mpeg'; // Hint the browser about the content type
+                       (async () => {
+                          const audioLink = await getDriveDirectLink(cellValue);
+                          const audio = document.createElement('audio');
+                          audio.controls = true;
+
+                          if (audioLink) {
+                            audio.src = audioLink;
+                          } else {
+                            audio.textContent = "Audio unavailable";
+                          }
+
+                          td.appendChild(audio);
+                          td.classList.add('audio-player-cell');
+                        })();
+
                         
                         audio.appendChild(source);
                         
