@@ -127,15 +127,25 @@
         });
         
         // **Audio Fix Implementation**
-        function getDriveDirectLink(url) {
+        async function getDriveDirectLink(url) {
           const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
-          if (match && match[1]) {
-            const fileId = match[1];
-            // Replace with YOUR actual Apps Script web app URL
-            const APPS_SCRIPT_BASE = "https://script.google.com/macros/s/AKfycbxlzxTyixSOWOBVwbzKgbW0S3ORAXTy395x_DoLXJxP6pwgw_AF56tE-qnOWoLJ7aAY/exec";
-            return `${APPS_SCRIPT_BASE}?id=${fileId}`;
+          if (!match) return null;
+
+          const fileId = match[1];
+          const APPS_SCRIPT_BASE = "https://script.google.com/macros/s/AKfycbxyz12345/exec"; // ← your script URL
+          const apiUrl = `${APPS_SCRIPT_BASE}?id=${fileId}`;
+
+          try {
+            const res = await fetch(apiUrl);
+            const json = await res.json();
+            if (json.error) throw new Error(json.error);
+
+            // Build a data: URI for the audio element
+            return `data:${json.mimeType};base64,${json.data}`;
+          } catch (err) {
+            console.error("Error fetching Drive audio:", err);
+            return null;
           }
-          return url;
         }
 
 
