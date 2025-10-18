@@ -7,6 +7,16 @@
   <title>Radio Log Embed (Lazy-Load Audio)</title>
 
 <style>
+  /* ---------- Base (mobile-first) ---------- */
+  :root {
+    --page-padding: 12px;
+    --container-max: 1200px;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
   body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -14,7 +24,7 @@
     padding-top: 55px;
     font-size: 14px;
     background-color: #fff;
-    overflow-x: hidden; /* Prevent stray horizontal scroll */
+    /* allow scrolling if content is taller than viewport (do NOT hide x-overflow) */
   }
 
   .header-bar {
@@ -23,25 +33,22 @@
     left: 0;
     width: 100%;
     background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    padding: 10px var(--page-padding);
     z-index: 1000;
   }
-
-  .header-bar h1 {
-    margin: 0;
-    font-size: 1.5em;
-  }
+  .header-bar h1 { margin: 0; font-size: 1.2rem; }
 
   #jump-container {
-    padding: 10px 20px 0;
+    padding: 10px var(--page-padding) 0;
     text-align: right;
     width: 100%;
-    max-width: 75%;
     margin: 0 auto;
+    box-sizing: border-box;
   }
 
   #jump-to-latest {
+    display: none;
     background-color: #007bff;
     color: white;
     border: none;
@@ -50,29 +57,38 @@
     border-radius: 4px;
     font-size: 0.9em;
     text-decoration: none;
-    display: none;
-  }
-  #jump-to-latest:hover {
-    background-color: #0056b3;
   }
 
   #main-content {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 12px var(--page-padding) 24px;
+    box-sizing: border-box;
   }
 
+  /* Container that holds the table and allows internal horizontal scroll (if needed) */
   #log-container {
     width: 100%;
-    max-width: 75%;
-    overflow-x: auto;
+    max-width: var(--container-max);
+    box-sizing: border-box;
     margin: 0 auto;
+    padding: 0;
+  }
+
+  /* Make the table responsive inside the container */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;        /* scroll inside this element (not the whole page) */
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
   }
 
   table {
     border-collapse: collapse;
     width: 100%;
+    min-width: 700px;        /* allow a comfortable layout on desktop */
     table-layout: auto;
+    font-size: 0.95rem;
   }
 
   th, td {
@@ -80,31 +96,16 @@
     padding: 6px 8px;
     text-align: left;
     vertical-align: top;
-    font-size: 0.9em;
     word-wrap: break-word;
     word-break: break-word;
   }
 
-  th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
+  th { background-color: #f2f2f2; font-weight: bold; }
+  tr:nth-child(even) { background-color: #f9f9f9; }
 
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
+  .audio-player-cell { min-width: 180px; }
+  audio { width: 100%; max-width: 100%; margin-top: 4px; }
 
-  .audio-player-cell {
-    min-width: 180px;
-  }
-
-  audio {
-    width: 100%;
-    max-width: 100%;
-    margin-top: 4px;
-  }
-
-  /* Button + spinner styling */
   .load-btn {
     background-color: #28a745;
     color: white;
@@ -118,95 +119,88 @@
     gap: 6px;
   }
 
-  .load-btn:hover {
-    background-color: #218838;
-  }
-
   .spinner {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border: 2px solid #fff;
     border-top: 2px solid rgba(255,255,255,0.3);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  /* ---------- Desktop tweaks ---------- */
+  @media (min-width: 1025px) {
+    .header-bar h1 { font-size: 1.4rem; }
+    #jump-container { max-width: 75%; }      /* centered small panel on very large screens */
+    #log-container { max-width: 1100px; }
+    table { min-width: 800px; }
   }
 
-  /* --- Mobile + Tablet Optimizations --- */
-  @media (max-width: 1024px) {
-    #jump-container,
-    #log-container {
-      max-width: 90%;
-    }
+  /* ---------- Tablet ---------- */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    #jump-container { max-width: 90%; }
+    #log-container { max-width: 1000px; }
+    table { min-width: 760px; }
   }
 
+  /* ---------- Mobile: convert table to stacked cards ---------- */
   @media (max-width: 768px) {
-    body {
-      font-size: 13px;
-      padding-top: 50px;
+    /* hide native table layout and show stacked blocks */
+    table, thead, tbody, th, td, tr {
+      display: block;
     }
 
-    .header-bar {
-      padding: 8px 12px;
+    thead {
+      display: none; /* hide header row for stacked view */
     }
 
-    .header-bar h1 {
-      font-size: 1.2em;
+    tr {
+      margin: 0 0 12px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
-    #jump-container {
-      text-align: center;
-      max-width: 95%;
-      padding: 8px 10px 0;
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 6px 8px;
+      border: none;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
     }
 
-    #main-content {
-      padding: 8px;
+    td:last-child { border-bottom: none; }
+
+    /* label (column name) */
+    td .label {
+      flex: 0 0 40%;
+      max-width: 40%;
+      font-weight: 600;
+      padding-right: 8px;
+      color: #333;
     }
 
-    #log-container {
-      width: 100%;
-      max-width: 95%;
-      overflow-x: auto;
+    td .value {
+      flex: 1 1 60%;
+      max-width: 60%;
+      word-wrap: break-word;
+      text-align: right;
     }
 
-    table {
-      font-size: 0.85em;
-      min-width: 100%;
+    .audio-player-cell .value {
+      text-align: left;
     }
 
-    th, td {
-      padding: 5px;
-    }
-
-    .audio-player-cell {
-      min-width: 140px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .header-bar h1 {
-      font-size: 1em;
-    }
-
-    #jump-to-latest {
-      font-size: 0.8em;
-      padding: 5px 10px;
-    }
-
-    table, th, td {
-      font-size: 0.8em;
-    }
-
-    .load-btn {
-      font-size: 0.8em;
-      padding: 3px 6px;
-    }
+    /* tighten spacing on very small phones */
+    body { font-size: 13px; padding-top: 50px; }
+    .header-bar h1 { font-size: 1.05rem; }
   }
 </style>
+
 
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -354,7 +348,45 @@
       const container = document.getElementById('log-container');
       container.innerHTML = '';
       container.appendChild(table);
-      showJumpButton(true);
+showJumpButton(true);
+
+/* --- Make table rows into accessible 'card' blocks on small screens ---
+   This sets each <td> to contain two spans: a .label (column name) and .value (cell content).
+   Works after the table is generated.
+*/
+function enableMobileStackedTable(tableEl) {
+  // retrieve headers in order
+  const headers = Array.from(tableEl.querySelectorAll('thead th')).map(h => h.textContent.trim());
+
+  // if headers are missing (some browsers or our stacked mode), try fallback by reading first row's cells count
+  const rows = tableEl.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const cells = Array.from(row.children);
+    cells.forEach((cell, idx) => {
+      // skip if already wrapped (avoid double-wrapping when re-rendering)
+      if (cell.querySelector('.label')) return;
+
+      // create label & value containers
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'label';
+      labelSpan.textContent = headers[idx] || `Column ${idx+1}`;
+
+      const valueSpan = document.createElement('span');
+      valueSpan.className = 'value';
+
+      // move existing cell content into valueSpan
+      while (cell.firstChild) valueSpan.appendChild(cell.firstChild);
+
+      // clear cell and append label + value
+      cell.appendChild(labelSpan);
+      cell.appendChild(valueSpan);
+    });
+  });
+}
+
+// call once now (table is present)
+enableMobileStackedTable(table);
+
     }
   </script>
 </body>
