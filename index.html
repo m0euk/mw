@@ -66,14 +66,22 @@
     }
     th { background-color: #f2f2f2; font-weight: bold; }
     tr:nth-child(even) { background-color: #f9f9f9; }
-    .audio-player-cell { min-width: 250px; }
-    audio {
-      width: 100%;
-      max-width: 300px;
-      text-align: center;
-      vertical-align: middle;
-      margin-top: 4px;
-    }
+   .audio-player-cell {
+  min-width: 250px;
+  text-align: center;      /* Centers button + audio horizontally */
+  vertical-align: middle;  /* Centers them vertically in the row */
+}
+
+.audio-player-cell > * {
+  display: inline-block;   /* Ensures proper inline centering */
+}
+
+audio {
+  width: 100%;
+  max-width: 300px;
+  margin-top: 4px;
+}
+
 
     /* Button + spinner styling */
     .load-btn {
