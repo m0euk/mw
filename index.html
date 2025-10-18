@@ -209,6 +209,9 @@ audio {
           const td = tr.insertCell();
           const val = row[h];
 
+          if (h === AUDIO_LINK_COLUMN_NAME) {
+            td.classList.add('audio-player-cell');
+
           if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
             const fileId = extractFileId(val);
             if (fileId) {
