@@ -1,102 +1,200 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Radio Log Embed (Lazy-Load Audio)</title>
-  <style>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    line-height: 1.5;
+    padding-top: 55px;
+    font-size: 14px;
+    background-color: #fff;
+  }
+
+  .header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 10px 16px;
+    z-index: 1000;
+  }
+
+  .header-bar h1 {
+    margin: 0;
+    font-size: 1.4em;
+  }
+
+  #jump-container {
+    padding: 10px 16px 0;
+    text-align: right;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  #jump-to-latest {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9em;
+    text-decoration: none;
+    display: none;
+  }
+  #jump-to-latest:hover {
+    background-color: #0056b3;
+  }
+
+  #main-content {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  #log-container {
+    width: 100%;
+    max-width: 900px;
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.9em;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .audio-player-cell {
+    min-width: 180px;
+  }
+
+  audio {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 4px;
+  }
+
+  /* Button + spinner styling */
+  .load-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .load-btn:hover {
+    background-color: #218838;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-top: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* --- Mobile Optimizations --- */
+  @media (max-width: 768px) {
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      line-height: 1.4;
-      padding-top: 55px;
-      font-size: 14px;
-    }
-    .header-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 10px 20px;
-      z-index: 1000;
-    }
-    .header-bar h1 { margin: 0; font-size: 1.5em; }
-    #jump-container {
-      padding: 10px 20px 0;
-      text-align: right;
-      max-width: 75%;
-      margin: 0 auto;
-    }
-    #jump-to-latest {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 0.9em;
-      text-decoration: none;
-      display: none;
-    }
-    #jump-to-latest:hover { background-color: #0056b3; }
-    #main-content {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-    #log-container {
-      max-width: 75%;
-      width: 100%;
-      overflow-x: auto;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      min-width: 600px;
-      table-layout: auto;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      text-align: left;
-      vertical-align: top;
-      font-size: 0.9em;
-    }
-    th { background-color: #f2f2f2; font-weight: bold; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    .audio-player-cell { min-width: 250px; }
-    audio {
-      width: 100%;
-      max-width: 300px;
-      margin-top: 4px;
+      font-size: 13px;
+      padding-top: 50px;
     }
 
-    /* Button + spinner styling */
-    .load-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      border-radius: 4px;
+    .header-bar {
+      padding: 8px 12px;
+    }
+
+    .header-bar h1 {
+      font-size: 1.2em;
+    }
+
+    #jump-container {
+      text-align: center;
+      padding: 8px 10px 0;
+    }
+
+    #main-content {
+      padding: 8px;
+    }
+
+    #log-container {
+      max-width: 100%;
+    }
+
+    table {
       font-size: 0.85em;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      min-width: 100%;
     }
-    .load-btn:hover { background-color: #218838; }
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #fff;
-      border-top: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+
+    th, td {
+      padding: 5px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+
+    .audio-player-cell {
+      min-width: 140px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-bar h1 {
+      font-size: 1em;
+    }
+
+    #jump-to-latest {
+      font-size: 0.8em;
+      padding: 5px 10px;
+    }
+
+    table, th, td {
+      font-size: 0.8em;
+    }
+
+    .load-btn {
+      font-size: 0.8em;
+      padding: 3px 6px;
+    }
+  }
+</style>
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
