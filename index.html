@@ -206,58 +206,51 @@ audio {
         if (i === filtered.length - 1) tr.id = 'latest-entry';
 
         headers.forEach(h => {
-  const td = tr.insertCell();
-  const val = row[h];
+          const td = tr.insertCell();
+          const val = row[h];
 
-  // Always add class to audio column cells
-  if (h === AUDIO_LINK_COLUMN_NAME) {
-    td.classList.add('audio-player-cell');
-  }
+          if (h === AUDIO_LINK_COLUMN_NAME) {
+          td.classList.add('audio-player-cell');
 
-  // Handle audio links
-  if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
-    const fileId = extractFileId(val);
-    if (fileId) {
-      const btn = document.createElement('button');
-      btn.textContent = "Load & Play";
-      btn.className = "load-btn";
-      td.appendChild(btn);
+          if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
+            const fileId = extractFileId(val);
+            if (fileId) {
+              const btn = document.createElement('button');
+              btn.textContent = "Load & Play";
+              btn.className = "load-btn";
+              td.appendChild(btn);
 
-      btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        btn.innerHTML = `<span class="spinner"></span> Loading...`;
+              btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner"></span> Loading...`;
 
-        const audioLink = await fetchDriveAudio(fileId);
-        if (audioLink) {
-          const audio = document.createElement('audio');
-          audio.controls = true;
-          audio.src = audioLink;
-          td.innerHTML = "";
-          td.appendChild(audio);
-          audio.play();
-        } else {
-          btn.textContent = "Failed";
-          btn.disabled = false;
-        }
+                const audioLink = await fetchDriveAudio(fileId);
+                if (audioLink) {
+                  const audio = document.createElement('audio');
+                  audio.controls = true;
+                  audio.src = audioLink;
+                  td.innerHTML = "";
+                  td.appendChild(audio);
+                  audio.play();
+                } else {
+                  btn.textContent = "Failed";
+                  btn.disabled = false;
+                }
+              });
+            } else {
+              td.textContent = "Invalid link";
+            }
+          } else if (typeof val === 'string' && val.startsWith('http')) {
+            const a = document.createElement('a');
+            a.href = val;
+            a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
+            a.target = '_blank';
+            td.appendChild(a);
+          } else {
+            td.textContent = val;
+          }
+        });
       });
-    } else {
-      td.textContent = "Invalid link";
-    }
-  } 
-  // Handle other URLs
-  else if (typeof val === 'string' && val.startsWith('http')) {
-    const a = document.createElement('a');
-    a.href = val;
-    a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
-    a.target = '_blank';
-    td.appendChild(a);
-  } 
-  // Default text
-  else {
-    td.textContent = val;
-  }
-});
-
 
       const container = document.getElementById('log-container');
       container.innerHTML = '';
