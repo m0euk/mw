@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Graeme Stoker's Medium Wave Log</title>
+  <title>Radio Log Embed (Lazy-Load Audio)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -96,12 +96,57 @@
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+    padding-top: 60px;
+  }
+
+  .header-bar h1 {
+    font-size: 1.2em;
+  }
+
+  #jump-container,
+  #log-container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  #main-content {
+    padding: 10px;
+  }
+
+  table {
+    font-size: 0.85em;
+    min-width: unset; /* allow table to shrink */
+  }
+
+  th, td {
+    padding: 6px 4px;
+    white-space: nowrap; /* prevent text wrapping if you prefer horizontal scroll */
+  }
+
+  #log-container {
+    overflow-x: auto;
+  }
+
+  .header-bar {
+    padding: 12px 10px;
+  }
+
+  audio {
+    max-width: 100%;
+  }
+}
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
   <div class="header-bar">
-    <h1>Graeme Stoker's Medium Wave Log</h1>
+    <h1>Radio Log Embed</h1>
   </div>
 
   <div id="jump-container">
