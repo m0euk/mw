@@ -63,11 +63,6 @@
       text-align: left;
       vertical-align: top;
       font-size: 0.9em;
-      font-size: inherit;
-      white-space: normal;  
-      word-break: break-word; /* breaks long words and URLs */
-      overflow-wrap: anywhere; /* allows breaking anywhere if needed */
-      white-space: normal; /* allows wrapping */
     }
     th { background-color: #f2f2f2; font-weight: bold; }
     tr:nth-child(even) { background-color: #f9f9f9; }
@@ -101,51 +96,6 @@
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-/* Responsive adjustments for mobile */
-@media (max-width: 768px) {
-  body {
-    font-size: 13px;
-    padding-top: 60px;
-  }
-
-  .header-bar h1 {
-    font-size: 1.2em;
-  }
-
-  #jump-container,
-  #log-container {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-
-  #main-content {
-    padding: 10px;
-  }
-
-  table {
-    font-size: 0.85em;
-    min-width: unset; /* allow table to shrink */
-  }
-
-  th, td {
-    padding: 6px 4px;
-    white-space: nowrap; /* prevent text wrapping if you prefer horizontal scroll */
-  }
-
-  #log-container {
-    overflow-x: auto;
-  }
-
-  .header-bar {
-    padding: 12px 10px;
-  }
-
-  audio {
-    max-width: 100%;
-  }
-}
-
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
