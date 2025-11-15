@@ -140,15 +140,23 @@
       }
     }
 
+// New (works for both formats)
 function extractFileId(url) {
-  // Regex to capture the file ID from either the path or the query string
-  // It looks for /file/d/ followed by the ID (old format)
-  // OR it looks for ?id= followed by the ID (new format and /uc?id=)
-  const match = url.match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
-
-  // The file ID is in the second captured group (index 1)
-  return match ? match[1] : null;
-}
+  // 1. Match 'file/d/' followed by the ID (for the old 'view' links)
+  // 2. Match 'id=' followed by the ID (for the new 'open' links with query parameters)
+  const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+  
+  // This existing regex *should* cover the new format (open?id=) but sometimes URL encoding/escaping can make the match fail.
+  // Let's try a more robust approach for the query parameter structure.
+  
+  // Try to extract from the query parameter 'id' first
+  try {
+    const urlObj = new URL(url);
+    const fileIdFromQuery = urlObj.searchParams.get('id');
+    if (fileIdFromQuery) return fileIdFromQuery;
+  } catch (e) {
+    // Ignore if URL is malformed, fall back to regex
+  }
   
   // Fallback to the existing regex for 'file/d/' and other structures
   const fallbackMatch = url.match(/drive\.google\.com\/(?:file\/d\/)([a-zA-Z0-9_-]+)/);
