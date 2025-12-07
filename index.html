@@ -200,18 +200,25 @@ function renderTable(data, headers) {
         headers.forEach(h => {
           const td = tr.insertCell();
           const val = row[h];
-          let displayValue = val; // Default display value
+          let displayValue = val; 
 
-          // >>> START: New logic for Time formatting
-          if (h === 'Time') {
-            // Convert to string and use padStart to add leading zeros up to 4 digits
-            displayValue = String(val).padStart(4, '0');
+          // Check if the header matches 'Time', 'time', or 'TIME'
+          if (h.toLowerCase() === 'time') {
+            // Ensure the value is not null/undefined before formatting
+            if (val !== null && val !== undefined) {
+              // Convert to string and pad with leading zeros up to 4 digits
+              displayValue = String(val).padStart(4, '0');
+            } else {
+                // Handle null/empty time values gracefully
+                displayValue = ''; 
+            }
             td.textContent = displayValue;
-            return; // Skip the rest of the logic for the Time column
+            return; 
           }
-          // >>> END: New logic for Time formatting
 
+          // Logic for AUDIO_LINK_COLUMN_NAME (GD)
           if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
+            // ... (Existing Audio Player Logic) ...
             const fileId = extractFileId(val);
             if (fileId) {
               const btn = document.createElement('button');
@@ -239,14 +246,16 @@ function renderTable(data, headers) {
             } else {
               td.textContent = "Invalid link";
             }
+          // Logic for other general links
           } else if (typeof val === 'string' && val.startsWith('http')) {
             const a = document.createElement('a');
             a.href = val;
             a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
             a.target = '_blank';
             td.appendChild(a);
+          // Logic for all other cells
           } else {
-            td.textContent = displayValue; // Use displayValue which is the original val for other columns
+            td.textContent = displayValue;
           }
         });
       });
