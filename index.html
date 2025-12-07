@@ -171,81 +171,91 @@
       }
     }
 
-    function renderTable(data, headers) {
-      const filtered = data.filter(row => row && Object.values(row).some(v => v !== null && v !== ""));
-      if (filtered.length === 0) {
-        document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
-        showJumpButton(false);
-        return;
-      }
+function renderTable(data, headers) {
+      const filtered = data.filter(row => row && Object.values(row).some(v => v !== null && v !== ""));
+      if (filtered.length === 0) {
+        document.getElementById('log-container').innerHTML = `<p>No data found in the sheet.</p>`;
+        showJumpButton(false);
+        return;
+      }
 
-      const table = document.createElement('table');
-      const thead = table.createTHead();
-      const tbody = table.createTBody();
+      const table = document.createElement('table');
+      const thead = table.createTHead();
+      const tbody = table.createTBody();
 
-      // Header
-      const headerRow = thead.insertRow();
-      headers.forEach(h => {
-        const th = document.createElement('th');
-        th.textContent = h;
-        if (h === AUDIO_LINK_COLUMN_NAME) th.classList.add('audio-player-cell');
-        headerRow.appendChild(th);
-      });
+      // Header
+      const headerRow = thead.insertRow();
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        if (h === AUDIO_LINK_COLUMN_NAME) th.classList.add('audio-player-cell');
+        headerRow.appendChild(th);
+      });
 
-      // Body
-      filtered.forEach((row, i) => {
-        const tr = tbody.insertRow();
-        if (i === filtered.length - 1) tr.id = 'latest-entry';
+      // Body
+      filtered.forEach((row, i) => {
+        const tr = tbody.insertRow();
+        if (i === filtered.length - 1) tr.id = 'latest-entry';
 
-        headers.forEach(h => {
-          const td = tr.insertCell();
-          const val = row[h];
+        headers.forEach(h => {
+          const td = tr.insertCell();
+          const val = row[h];
+          let displayValue = val; // Default display value
 
-          if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
-            const fileId = extractFileId(val);
-            if (fileId) {
-              const btn = document.createElement('button');
-              btn.textContent = "Load & Play";
-              btn.className = "load-btn";
-              td.appendChild(btn);
+          // >>> START: New logic for Time formatting
+          if (h === 'Time') {
+            // Convert to string and use padStart to add leading zeros up to 4 digits
+            displayValue = String(val).padStart(4, '0');
+            td.textContent = displayValue;
+            return; // Skip the rest of the logic for the Time column
+          }
+          // >>> END: New logic for Time formatting
 
-              btn.addEventListener('click', async () => {
-                btn.disabled = true;
-                btn.innerHTML = `<span class="spinner"></span> Loading...`;
+          if (h === AUDIO_LINK_COLUMN_NAME && typeof val === 'string' && val.startsWith('http')) {
+            const fileId = extractFileId(val);
+            if (fileId) {
+              const btn = document.createElement('button');
+              btn.textContent = "Load & Play";
+              btn.className = "load-btn";
+              td.appendChild(btn);
 
-                const audioLink = await fetchDriveAudio(fileId);
-                if (audioLink) {
-                  const audio = document.createElement('audio');
-                  audio.controls = true;
-                  audio.src = audioLink;
-                  td.innerHTML = "";
-                  td.appendChild(audio);
-                  audio.play();
-                } else {
-                  btn.textContent = "Failed";
-                  btn.disabled = false;
-                }
-              });
-            } else {
-              td.textContent = "Invalid link";
-            }
-          } else if (typeof val === 'string' && val.startsWith('http')) {
-            const a = document.createElement('a');
-            a.href = val;
-            a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
-            a.target = '_blank';
-            td.appendChild(a);
-          } else {
-            td.textContent = val;
-          }
-        });
-      });
+              btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner"></span> Loading...`;
 
-      const container = document.getElementById('log-container');
-      container.innerHTML = '';
-      container.appendChild(table);
-      showJumpButton(true);
-    }
+                const audioLink = await fetchDriveAudio(fileId);
+                if (audioLink) {
+                  const audio = document.createElement('audio');
+                  audio.controls = true;
+                  audio.src = audioLink;
+                  td.innerHTML = "";
+                  td.appendChild(audio);
+                  audio.play();
+                } else {
+                  btn.textContent = "Failed";
+                  btn.disabled = false;
+                }
+              });
+            } else {
+              td.textContent = "Invalid link";
+            }
+          } else if (typeof val === 'string' && val.startsWith('http')) {
+            const a = document.createElement('a');
+            a.href = val;
+            a.textContent = val.length > 50 ? val.substring(0, 47) + '...' : val;
+            a.target = '_blank';
+            td.appendChild(a);
+          } else {
+            td.textContent = displayValue; // Use displayValue which is the original val for other columns
+          }
+        });
+      });
+
+      const container = document.getElementById('log-container');
+      container.innerHTML = '';
+      container.appendChild(table);
+      showJumpButton(true);
+    }
   </script>
 </body>
 </html>
